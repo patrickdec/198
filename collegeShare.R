@@ -1,5 +1,7 @@
 library(ggplot2)#loads a graphing library to produce charts
 library(plyr)
+library(partykit)
+library(grid)
 library(CHAID)
 setwd("C:/Users/JDec/Documents/CSE198/Final Proj/Data")
 deptOfEdu <- read.csv("Cleaned-Most-Recent-Cohorts-Treasury-Elements.csv",header = TRUE, sep = ",", dec = ".")
@@ -58,4 +60,4 @@ EmpRates <- rbind(RatedEmpRates,UnratedEmpRates,FullRatedEmpRates)
 
 ggplot(EmpRates, aes(unemp, fill = type)) + geom_density(alpha = 0.45)
 
-chaid(unemploymentFlag, FullCollegeData)
+chaid(~FullCollegeData$unemploymentFlag, FullCollegeData, na.action = na.pass)
