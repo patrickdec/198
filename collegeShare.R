@@ -3,6 +3,7 @@ library(plyr)
 library(grid)
 library(rpart)
 library(e1071)
+library(kknn)
 library(ROCR)
 #Nicole: hello
 
@@ -81,6 +82,60 @@ FullRatedEmpRates$type <- 'Fully Ranked'
 colnames(RatedEmpRates)[1] <- 'unemp'
 colnames(UnratedEmpRates)[1] <- 'unemp'
 colnames(FullRatedEmpRates)[1] <- 'unemp'
+
+
+#k nearest neighbor
+college <- FullCollegeData
+college <- subset(college, TimeRankScore != -1 | ShanghaiRankScore != -1 | CWURRankScore != -1)
+
+college<-college[sample(nrow(college)),]
+college <- college[-2]
+
+fold10 <- cut(seq(1,nrow(college)),breaks=5,labels=FALSE)
+
+Precisions<-list() #create lists to hold all of the attributes
+Recalls<-list()
+Fmeasures<-list()
+Accuracies<-list()
+
+for(i in 1:5){ #for loop to go through each fold
+  Indexes <- which(fold10==i,arr.ind=TRUE) #split up into test and train data
+  college.test <- college[Indexes, ]
+  college.train <- college[-Indexes, ]
+  
+  kknnmodel2 = train.kknn(unemploymentFlag~., college.train)
+  
+  kknncontpredict <- predict(kknnmodel2,college.test[,-5])
+  PredictTable <- table(kknncontpredict,college.test[,5])
+  
+  #calculates each of the attribute using the Prediction Table
+  #precision = D / B + D
+  Prec<-PredictTable[4]/(PredictTable[2] + PredictTable[4])
+  Precisions[i] = c(Prec)
+  
+  #recall = D / C + D
+  Rec<-PredictTable[4]/(PredictTable[3] + PredictTable[4])
+  Recalls[i] = c(Rec)
+  
+  #F-measure = 2 * precision * recall / (precision + recall)
+  Fmeasures[i]<-(2*Prec*Rec)/(Prec + Rec)
+  
+  #accuracy = A + D / A + B + C + D
+  Accuracies[i]<-(PredictTable[1] + PredictTable[4])/(PredictTable[1] + PredictTable[2] + PredictTable[3] + PredictTable[4])
+  
+}
+
+averagePrecision<-Reduce("+", Precisions)/5 #gets the average for each attribute
+averageRecall<-Reduce("+", Recalls)/5
+averageFmeasure<-Reduce("+", Fmeasures)/5
+averageAccuracy<-Reduce("+", Accuracies)/5
+
+print("For 5 fold cross validation using k nearest neighbor") #prints out the desired info
+print(c("The average Precision is", averagePrecision))
+print(c("The Average Recall is", averageRecall))
+print(c("The Average Fmeasure is", averageFmeasure))
+print(c("The Average Accuracy is", averageAccuracy))
+
 
 EmpRates <- rbind(RatedEmpRates,UnratedEmpRates,FullRatedEmpRates)
 
