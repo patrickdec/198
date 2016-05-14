@@ -2,6 +2,8 @@ library(ggplot2)#loads a graphing library to produce charts
 library(plyr)
 library(grid)
 library(rpart)
+library(e1071)
+library(ROCR)
 #Nicole: hello
 
 setwd("https://github.com/patrickdec/198.git")
@@ -35,6 +37,28 @@ FullCollegeData <- merge(FullCollegeData, ShanghaiRank, by.x = "INSTNM", by.y = 
 FullCollegeData <- merge(FullCollegeData, CWURRank, by.x = "INSTNM", by.y = "institution", all.x = TRUE)
 FullCollegeData$unemploymentFlag <- ifelse(FullCollegeData$unemp_rate < 3.58, 0, 1)
 FullCollegeData[is.na(FullCollegeData)] <- -1
+FullCollegeData$unemploymentFlag <- factor(FullCollegeData$unemploymentFlag)
+
+FullCollegeData$TimeRankScore <- as.numeric(FullCollegeData$TimeRankScore)
+#classifier <- naiveBayes(FullCollegeData[,3:5], FullCollegeData[,6])
+#table(predict(classifier, FullCollegeData[,3:5]), FullCollegeData[,6])
+#prediction <- predict(classifier, FullCollegeData[,3:5])
+FullCollegeData2 <- FullCollegeData[!(FullCollegeData$TimeRankScore==-1 & FullCollegeData$ShanghaiRankScore==-1 & FullCollegeData$CWURRankScore==-1),]
+
+FCD2 <- FullCollegeData2 #create new data frame form purpose of randomization
+FCD2$rand <- sample(1:144, 144) #generate numbers in range and randomly assign them
+
+#randomly split up training and test data
+FCD.train <- FCD2[FCD2$rand < (144/2), ] 
+FCD.test <- FCD2[FCD2$rand >= (144/2), ]
+
+train.model <- rpart(unemploymentFlag ~ TimeRankScore + ShanghaiRankScore + CWURRankScore, method="class", data=FCD.train)
+tab <- table(data.frame(FCD.train$unemploymentFlag, pred=predict(train.model, type="class")))
+sum(diag(tab)/sum(tab))
+
+test.model <- rpart(unemploymentFlag ~ TimeRankScore + ShanghaiRankScore + CWURRankScore, method="class", data=FCD.test)
+tab2 <- table(data.frame(FCD.test$unemploymentFlag, pred=predict(test.model, type="class")))
+sum(diag(tab2)/sum(tab2))
 
 meanRankedandUnranked <- mean(FullCollegeData$unemp_rate)
 CollegeThrowAway <- FullCollegeData[rowSums(is.na(FullCollegeData[,3:5]))==3,]
