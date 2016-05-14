@@ -3,6 +3,9 @@ library(plyr)
 library(partykit)
 library(grid)
 library(CHAID)
+
+#Nicole: hello
+
 setwd("C:/Users/JDec/Documents/CSE198/Final Proj/Data")
 deptOfEdu <- read.csv("Cleaned-Most-Recent-Cohorts-Treasury-Elements.csv",header = TRUE, sep = ",", dec = ".")
 deptOfEdu <- deptOfEdu[2:3]
