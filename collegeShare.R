@@ -6,7 +6,7 @@ library(CHAID)
 
 #Nicole: hello
 
-setwd("C:/Users/JDec/Documents/CSE198/Final Proj/Data")
+setwd("https://github.com/patrickdec/198.git")
 deptOfEdu <- read.csv("Cleaned-Most-Recent-Cohorts-Treasury-Elements.csv",header = TRUE, sep = ",", dec = ".")
 deptOfEdu <- deptOfEdu[2:3]
 deptOfEdu <- deptOfEdu[deptOfEdu$unemp_rate != 'NULL',]
