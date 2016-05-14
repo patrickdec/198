@@ -1,9 +1,7 @@
 library(ggplot2)#loads a graphing library to produce charts
 library(plyr)
-library(partykit)
 library(grid)
-library(CHAID)
-
+library(rpart)
 #Nicole: hello
 
 setwd("https://github.com/patrickdec/198.git")
@@ -36,6 +34,7 @@ FullCollegeData <- merge(deptOfEdu, TimesRank, by.x = "INSTNM", by.y = "universi
 FullCollegeData <- merge(FullCollegeData, ShanghaiRank, by.x = "INSTNM", by.y = "university_name", all.x = TRUE)
 FullCollegeData <- merge(FullCollegeData, CWURRank, by.x = "INSTNM", by.y = "institution", all.x = TRUE)
 FullCollegeData$unemploymentFlag <- ifelse(FullCollegeData$unemp_rate < 3.58, 0, 1)
+FullCollegeData[is.na(FullCollegeData)] <- -1
 
 meanRankedandUnranked <- mean(FullCollegeData$unemp_rate)
 CollegeThrowAway <- FullCollegeData[rowSums(is.na(FullCollegeData[,3:5]))==3,]
